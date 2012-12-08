@@ -4,24 +4,31 @@
 # Contributor: ruario
 
 pkgname=google-chrome
-pkgver=current   # Check for new Linux releases in: http://googlechromereleases.blogspot.com/search/label/Stable%20updates
+pkgver=23.0.1271.95   # Check for new Linux releases in: http://googlechromereleases.blogspot.com/search/label/Stable%20updates
 pkgrel=1
 pkgdesc="An attempt at creating a safer, faster, and more stable browser (Stable Channel)"
-arch=('x86_64')
+arch=('i686' 'x86_64')
 url="http://www.google.com/chrome"
 license=('custom:chrome')
-depends=('alsa-lib' 'gconf' 'gtk2' 'hicolor-icon-theme' 'libpng12' 'libxslt' 'libxss' 'nss' 'ttf-dejavu' 'xdg-utils')
+depends=('alsa-lib' 'gconf' 'gtk2' 'hicolor-icon-theme' 'libpng' 'libxslt' 'libxss' 'nss' 'ttf-dejavu' 'xdg-utils')
 optdepends=('kdebase-kdialog: needed for file dialogs in KDE' 'openssl098: needed for built-in flash-plugin to work')
 provides=("google-chrome=$pkgver")
 conflicts=('google-chrome')
 install=${pkgname}.install
 _channel='stable'
-_verbld=current
+_verbld=23.0.1271.95-169798
 
-md5sums=('bfab2739e528000b540a00fcc4f34f02')
+if [ "$CARCH" = "i686" ]; then
+    _arch='i386'
+    md5sums=('53743dd5756324fbc8fc1ad6229e30ac')
+elif [ "$CARCH" = "x86_64" ]; then
+    _arch='x86_64'
+    md5sums=('3172640a54f01684e959ebb4799188fc')
+fi
 
 
-source=("https://dl.google.com/linux/direct/google-chrome-${_channel}_${_verbld}_x86_64.rpm")
+source=("http://dl.google.com/linux/chrome/rpm/stable/${_arch}/google-chrome-${_channel}-${_verbld}.${_arch}.rpm")
+
 
 package() {
     msg "Preparing install"
@@ -33,8 +40,13 @@ package() {
     ln -s /opt/google/chrome/google-chrome "$pkgdir/usr/bin/"
     mv "$pkgdir/opt/google/chrome/google-chrome.desktop" "$pkgdir/usr/share/applications"
     
+    # Remove 64-bit executable from 32-bit installation
+    if [ "$CARCH" = "i686" ]; then
+        rm -f "$pkgdir/opt/google/chrome/nacl_irt_x86_64.nexe"
+    fi
+    
     # Udev workaround
-    ln -s /usr/lib/libudev.so.1.0.1 "$pkgdir/opt/google/chrome/libudev.so.0"
+    ln -s /usr/lib/libudev.so.1 "$pkgdir/opt/google/chrome/libudev.so.0"
 
     # Adding man page
     if [ ! -e "$srcdir/usr/share/man/man1/google-chrome.1.gz" ]; then
@@ -53,3 +65,4 @@ package() {
 
     msg2 "Installation finished!"
 }
+md5sums=('3172640a54f01684e959ebb4799188fc')

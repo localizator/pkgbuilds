@@ -1,0 +1,48 @@
+# Maintainer: Ner0
+# Contributor: Dan Serban
+
+pkgname=switchboard-bzr
+pkgver=349
+pkgrel=1
+pkgdesc="Modular desktop settings hub"
+arch=('i686' 'x86_64')
+url="https://launchpad.net/switchboard"
+license=('GPL3')
+groups=('pantheon')
+depends=('clutter-gtk' 'glib2' 'granite-bzr' 'libgee' 'libunity')
+makedepends=('bzr' 'cmake' 'vala')
+
+_bzrtrunk=lp:switchboard
+_bzrmod=switchboard
+
+build() {
+  msg "Connecting to Bazaar server...."
+
+  if [[ -d "$_bzrmod" ]]; then
+    cd "$_bzrmod" && bzr pull "$_bzrtrunk" -r "$pkgver" && cd ..
+    msg "The local files are updated."
+  else
+    bzr branch "$_bzrtrunk" "$_bzrmod" -r "$pkgver"
+  fi
+
+  msg "BZR checkout done or server timeout"
+  msg "Starting make..."
+
+  rm -rf "$_bzrmod-build"
+  cp -rf "$_bzrmod" "$_bzrmod-build"
+  cd "$_bzrmod-build"
+
+  # Remove libunity dependency
+  # sed -i 's/\ unity)/)/;/unity$/d' CMakeLists.txt
+
+  rm -rf build/
+  mkdir build
+  cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+  make ${MAKEFLAGS}
+}
+
+package() {
+  cd "$_bzrmod-build/build"
+  make DESTDIR="$pkgdir/" install
+}

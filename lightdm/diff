@@ -1,0 +1,27 @@
+4c4
+< pkgrel=5
+---
+> pkgrel=6
+16,17c16
+< depends=('dbus-glib' 'libxklavier' 'pantheon-greeter')
+< replaces=('lightdm-ubuntu')
+---
+> depends=('dbus-glib' 'libxklavier')
+22c21,26
+< 	    'accountsservice: limit account shown by the greeter')
+---
+> 	    'accountsservice: limit account shown by the greeter'
+> 	    'lightdm-kde: Qt lightdm greeter'
+> 	    'lightdm-gtk-greeter: You need this package to test the default greeter'
+> 	    'lightdm-webkit-greeter-bzr: webkit lightdm greeter'
+>             'lightdm-crowd-greeter: 3d lightdm greeter'
+> 	    'lightdm-pantheon-greeter: ElementaryOS greeter writtern in vala')
+38c42
+<      --with-greeter-session=pantheon-greeter --disable-tests
+---
+>      --with-greeter-session=lightdm-gtk-greeter --disable-tests
+73c77
+<          '378bb0e42b3f885859094519fa003e4a')
+---
+>          'a5c60ec8739a698e4127b47ef417e517')
+\ No hay ningún carácter de nueva línea al final del fichero
