@@ -8,7 +8,7 @@ arch=('i686' 'x86_64')
 url="http://sixsixfive.deviantart.com/art/ACID-280889262"
 license=('GPL')
 groups=('xfce')
-depends=()
+depends=('gtk-engine-mist')
 source=("http://dl.dropbox.com/u/24598537/aur/${pkgname}-$pkgver.tar.gz")
 md5sums=('9e8554f44637ed69c19328b8d9df663e')
 
