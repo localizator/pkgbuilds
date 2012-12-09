@@ -1,0 +1,28 @@
+post_install() {
+  update-desktop-database -q
+  gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
+  chattr +i /usr/bin/steam
+  echo "YOU NEED ONE OF THE OPT DEPENDS"
+  echo "you don't need gksu or xterm"
+  echo "infact until they release the new version of steam"
+  echo "it probably better to remove them"
+}
+
+pre_install(){
+  update-desktop-database -q
+  gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
+    chattr -i /usr/bin/steam
+}
+
+post_upgrade() {
+  post_install $1 $2
+}
+
+pre_upgrade(){
+    pre_install $1 $2
+}
+
+post_remove() {
+  pre_install $1 removing
+}
+
