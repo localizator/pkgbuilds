@@ -1,0 +1,97 @@
+# Maintainer: Ivan Petruk <localizator@ukr.net>
+
+pkgname=crossover
+pkgver=13.1.3
+pkgrel=1
+_pkgdebrel=1
+pkgdesc="Run Windows Programs on Linux"
+arch=('i686' 'x86_64')
+url="http://www.codeweavers.com"
+license=('custom')
+changelog="CHANGELOG"
+makedepends=('tar')
+install=${pkgname}.install
+replaces=('crossover-games' 'crossover-pro' 'crossover-standard')
+depends=('python' 'alsa-lib' 'libsm' 'libxext' 'libxrandr' 'libice' 'pygtk'
+    'desktop-file-utils' 'fontconfig' 'libxcursor' 'libxdamage'
+    'libxxf86dga' 'mesa' 'libpng12' 'libjpeg' 'libcups' 'python2-dbus')
+
+optdepends=('libxcursor: coloured mouse pointer support'
+    'libxi: enables joystick and tablet support'
+    'libxinerama: enables spanning multiple screens'
+    'openssl:  support for secure Internet communication'
+    'libxxf86vm: perform gamma adjustments'
+    'unzip: required to install Guild Wars, automatic installer extraction'
+)
+source=("http://media.codeweavers.com/pub/${pkgname}/cxlinux/demo/${pkgname}_${pkgver}-${_pkgdebrel}.deb"
+        "winewrapper.exe.so")
+sha256sums=('8e658ed75145ae99afc81a745b515ed4ec792a272df1cdbb09b2cb58be9a2298'
+            '4e8ac85fd4e8cfb7c2fdd7d7b7e2e8f85e07d8ea81c3c468ec6f8448055be198')
+
+if [ $CARCH = "x86_64" ]; then
+    depends=('python' 'fontconfig' 'desktop-file-utils' 'alsa-lib'
+        'lib32-alsa-lib' 'lib32-fontconfig' 'lib32-libxcursor' 'libxxf86dga'
+        'libxrandr' 'libxdamage' 'lib32-libxdamage' 'mesa' 'lib32-mesa'
+        'lib32-glibc' 'libxcursor' 'lib32-libsm' 'lib32-libxext' 'lib32-zlib'
+        'lib32-gcc-libs' 'lib32-libxrandr' 'lib32-libice' 'lib32-util-linux-ng'
+        'lib32-e2fsprogs' 'pygtk' 'lib32-lcms' 'lib32-lcms2' 'lib32-libpng12'
+        'lib32-libjpeg' 'lib32-libcups' 'python2-dbus'
+    )
+
+    optdepends=('lib32-nvidia-utils: enables 3D under nvidia cards'
+        'lib32-catalyst-utils: enables 3D under ati cards'
+        'lib32-libxcursor: coloured mouse pointer support'
+        'lib32-libxinerama: enables spanning multiple screens'
+        'lib32-openssl:  support for secure Internet communication'
+        'lib32-libxxf86vm: perform gamma adjustments'
+        'lib32-libxi: enables joystick and tablet support'
+        'unzip: required to install Guild Wars, automatic installer extraction'
+    )
+fi
+
+package() {
+    cd ${srcdir}
+
+    ar -p crossover_${pkgver}-${_pkgdebrel}.deb data.tar.gz | tar zxf - -C "${pkgdir}" || return 1
+    if [ $CARCH = 'i686' ] ; then
+        rm -fr ${pkgdir}/opt/cxoffice/lib/nsplugin-linux64.so
+    fi
+
+    #remove symlink and create real directory
+    rm ${pkgdir}/opt/cxoffice/doc 
+    mkdir ${pkgdir}/opt/cxoffice/doc 
+
+    mv ${pkgdir}/usr/share/doc/crossover/* ${pkgdir}/opt/cxoffice/doc
+
+    gzip -d "${pkgdir}/opt/cxoffice/doc/license.txt.gz"
+    rm "${pkgdir}/usr" -r
+    sed -i -e 's!;;"MenuRoot" = ""!"MenuRoot" = "Windows Games"!' \
+           -e 's!;;"MenuStrip" = ""!"MenuStrip" = "1"!' \
+           ${pkgdir}/opt/cxoffice/share/crossover/bottle_data/cxbottle.conf
+
+    mkdir -p ${pkgdir}/usr/bin
+    ln -s /opt/cxoffice/bin/wine ${pkgdir}/usr/bin/crossover
+    ln -s /opt/cxoffice/bin/cxsetup ${pkgdir}/usr/bin/cxsetup
+
+    mkdir -p ${pkgdir}/etc/profile.d
+    echo '[ -d /opt/cxoffice/bin ] && export PATH="${PATH}:/opt/cxoffice/bin"' > ${pkgdir}/etc/profile.d/cxoffice.sh
+    echo '[ -d /opt/cxoffice/bin ] && setenv PATH ${PATH}:/opt/cxoffice/bin' > ${pkgdir}/etc/profile.d/cxoffice.csh
+    chmod 755 ${pkgdir}/etc/profile.d/cxoffice.sh ${pkgdir}/etc/profile.d/cxoffice.csh
+
+    # Fix Auto update error
+    install -m 644 -D ${pkgdir}/opt/cxoffice/share/crossover/data/cxoffice.conf ${pkgdir}/opt/cxoffice/etc/cxoffice.conf
+    sed -i -e 's!;;"PrivateShortcutDirs" = ""!"PrivateShortcutDirs" = "${HOME}/bin:${CX_ROOT}/bin"!' \
+   	   -e 's!;;"PrivateLinuxNSPluginDirs" = ""!"PrivateLinuxNSPluginDirs" = "${MOZ_PLUGIN_PATH}"!' \
+           -e 's!;;"PrivateLinux64NSPluginDirs" = ""!"PrivateLinux64NSPluginDirs" = "${MOZ_PLUGIN_PATH}"!' \
+           -e 's!;;"ProductPackage" = ""!"ProductPackage" = "Converted from .deb to pacman."!' \
+           ${pkgdir}/opt/cxoffice/etc/cxoffice.conf
+
+    # Changelog for pacman -Qc
+    gzip -dfc ${pkgdir}/opt/cxoffice/doc/changelog.gz > ${startdir}/CHANGELOG
+
+    # place license in correct directory
+    install -D -m644 ${pkgdir}/opt/cxoffice/doc/license.txt ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE
+    
+    # crack
+    install -m 644 -D "$srcdir/winewrapper.exe.so" "$pkgdir/opt/cxoffice/lib/wine/winewrapper.exe.so"
+}

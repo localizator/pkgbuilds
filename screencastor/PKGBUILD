@@ -1,0 +1,28 @@
+# Maintainer: localizator <localizator at ukr dot net>
+
+pkgname=screencastor
+pkgver=1.1.1
+pkgrel=1
+pkgdesc="A powerful screencasting app written in python"
+arch=('any')
+url="http://forum.ubuntu-fr.org/viewtopic.php?id=440555"
+license=('GPL')
+depends=('python2' 'pygtk' 'pygtksourceview2' 'vte' 'ffmpeg' 'sed' 'bash' 'imagemagick' 'hicolor-icon-theme')
+options=('!emptydirs')
+install=$pkgname.install
+source=("https://launchpad.net/~hizo/+archive/screencastor/+files/${pkgname}_${pkgver}~ppa5~quantal.tar.gz"
+        "http://hizo.fr/linux/screencastor/ffpresets.tar.gz")
+md5sums=('0076153fce9549ea2ec5edf7c5c0b642'
+         'db2beb9bab860f7e1209a61c165a48be')
+
+package() {
+  cp -rf $pkgname/usr "$pkgdir/"
+
+  sed -i 's|/usr/bin/env python|/usr/bin/env python2|' "$pkgdir/usr/share/screencastor/screencastor.py"
+
+  for i in /usr/share/ffmpeg/*.ffpreset; do rm -f "$srcdir"/$(basename $i); done
+  install -dm755 "$pkgdir/usr/share/ffmpeg"
+  find "$srcdir/" -name "*.ffpreset" -exec install -m644 '{}' "$pkgdir/usr/share/ffmpeg" \;
+  
+  chmod +x "$pkgdir"/usr/{bin/screencastor,share/screencastor/screencastor.{glade,py,sh}}
+}
