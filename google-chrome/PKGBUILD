@@ -1,5 +1,5 @@
 # Maintainer: Det <nimetonmaili at gmail a-dot com>
-# Contributors: t3ddy, Lex Rivera aka x-demon, ruario
+# Contributors: Ivan Petruk <localizator@ukr.net>
 
 # Check for new Linux releases in: http://googlechromereleases.blogspot.com/search/label/Stable%20updates
 # or use: $ curl -s https://dl.google.com/linux/chrome/rpm/stable/x86_64/repodata/other.xml.gz | gzip -df | awk -F\" '/pkgid/{ sub(".*-","",$4); print $4": "$10 }'
